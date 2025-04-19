@@ -41,5 +41,6 @@ func main() {
 	http.HandleFunc("/get-all-products", handlers.GetAllProductsHandler)    // Обработчик для получения товаров
 	http.HandleFunc("/get-product-image/", handlers.GetProductImageHandler) // Обработчик для получения изображения
 	http.HandleFunc("/get-clients", handlers.GetClientsHandler)
+	http.HandleFunc("/get-product-by-name/product", handlers.GetProductByName)
 	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)))
 }
