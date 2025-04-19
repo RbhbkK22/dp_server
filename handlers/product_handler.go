@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"automation/models"
-	"automation/db"  // Импортируем наш пакет db
+	"automation/db" 
 	"encoding/json"
 	"net/http"
 	"strings"
 )
 
 func GetProductByName(w http.ResponseWriter, r *http.Request) {
-	// Получаем соединение с БД
 	dbConn, err := db.ConnectDB()
 	if err != nil {
 		http.Error(w, "Failed to connect to database: "+err.Error(), http.StatusInternalServerError)

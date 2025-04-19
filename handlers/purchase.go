@@ -7,7 +7,6 @@ import (
 	"net/http"
 )
 
-// Handler для получения истории покупок пользователя
 func PurchaseHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("user_id")
 	if userID == "" {
@@ -61,7 +60,6 @@ func PurchaseHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Handler для получения общего количества покупок пользователя
 func TotalPurchasesHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("user_id")
 	if userID == "" {

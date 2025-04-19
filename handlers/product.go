@@ -22,14 +22,12 @@ func AddProductHandler(res http.ResponseWriter, req *http.Request) {
 		}
 	}()
 
-	// Parse the form data with file upload
 	if err = req.ParseMultipartForm(32 << 20); err != nil {
 		status = http.StatusInternalServerError
 		return
 	}
 	fmt.Println("Form parsed successfully")
 
-	// Get the product name, price, and file from the form
 	name := req.FormValue("name")
 	priceStr := req.FormValue("price")
 
@@ -53,7 +51,6 @@ func AddProductHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Get the uploaded file
 	file, fileHeader, err := req.FormFile("photo")
 	if err != nil {
 		err = fmt.Errorf("Error retrieving file: %v", err)
@@ -62,7 +59,6 @@ func AddProductHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	defer file.Close()
 
-	// Save the file to disk
 	uploadDir := "./uploads/"
 	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 		os.Mkdir(uploadDir, os.ModePerm)
@@ -85,7 +81,6 @@ func AddProductHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	fmt.Printf("File successfully uploaded: %s\n", filePath)
 
-	// Save product data in the database
 	dbConn, err := db.ConnectDB()
 	if err != nil {
 		err = fmt.Errorf("Database connection error: %v", err)
@@ -94,7 +89,6 @@ func AddProductHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	defer dbConn.Close()
 
-	// Insert the product into the database
 	_, err = dbConn.Exec("INSERT INTO product (name, price, photo) VALUES (?, ?, ?)", name, price, filePath)
 	if err != nil {
 		err = fmt.Errorf("Error inserting product into database: %v", err)

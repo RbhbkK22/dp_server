@@ -8,22 +8,17 @@ import (
 
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Разрешаем доступ с любого домена
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		// Разрешаем необходимые методы
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
-		// Разрешаем заголовки
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		// Если запрос типа OPTIONS (pre-flight), просто возвращаем статус 200
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		// Передаем запрос дальше
 		next.ServeHTTP(w, r)
 	})
 }
@@ -38,9 +33,12 @@ func main() {
 	http.HandleFunc("/purchase-history", handlers.PurchaseHistoryHandler)
 	http.HandleFunc("/total-purchases", handlers.TotalPurchasesHandler)
 	http.HandleFunc("/get-users", handlers.GetUsersHandler)
-	http.HandleFunc("/get-all-products", handlers.GetAllProductsHandler)    // Обработчик для получения товаров
-	http.HandleFunc("/get-product-image/", handlers.GetProductImageHandler) // Обработчик для получения изображения
+	http.HandleFunc("/get-all-products", handlers.GetAllProductsHandler)   
+	http.HandleFunc("/get-product-image/", handlers.GetProductImageHandler) 
 	http.HandleFunc("/get-clients", handlers.GetClientsHandler)
 	http.HandleFunc("/get-product-by-name/product", handlers.GetProductByName)
+	http.HandleFunc("/get-order-by-name/order", handlers.GetOrdersByClientName)
+	http.HandleFunc("/get-client-by-name/client", handlers.GetClientsByName)
+	http.HandleFunc("/get-worker-by-name/worker", handlers.GetWorkersByName)
 	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)))
 }

@@ -44,7 +44,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Handle password hashing if needed
 	if !db.IsPasswordHashed(user.Pass) {
 		hashedPassword, err := db.HashPassword(user.Pass)
 		if err != nil {
@@ -65,7 +64,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Don't return password hash in response
 	responseUser := struct {
 		Id    int    `json:"id"`
 		Login string `json:"login"`

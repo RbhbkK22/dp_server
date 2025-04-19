@@ -9,9 +9,7 @@ import (
 	"automation/models"
 )
 
-// Функция для получения всех работников
 func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	// Подключение к базе данных
 	dbConn, err := db.ConnectDB()
 	if err != nil {
 		log.Println("Database connection error:", err)
@@ -20,7 +18,6 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dbConn.Close()
 
-	// Запрос на получение всех пользователей
 	rows, err := dbConn.Query(`
 		SELECT w.id, w.login, w.fio, p.name AS post, w.pass
 		FROM workers w
@@ -34,10 +31,8 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	// Массив для хранения пользователей
 	var users []models.User
 
-	// Обработка результатов запроса
 	for rows.Next() {
 		var user models.User
 		err := rows.Scan(&user.Id, &user.Login, &user.Fio, &user.Post, &user.Pass)
@@ -47,18 +42,15 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Исключаем передачу пароля
-		user.Pass = "" // Очищаем пароль перед отправкой клиенту
+		user.Pass = "" 
 		users = append(users, user)
 	}
 
-	// Проверка на наличие записей
 	if len(users) == 0 {
 		http.Error(w, "No users found", http.StatusNotFound)
 		return
 	}
 
-	// Отправка данных пользователей в JSON
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(users)
 	if err != nil {
@@ -76,7 +68,6 @@ func GetClientsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dbConn.Close()
 
-	// Получаем список всех клиентов
 	rows, err := dbConn.Query("SELECT id, name, contact FROM clients")
 	if err != nil {
 		http.Error(w, "Database query error", http.StatusInternalServerError)
@@ -87,7 +78,7 @@ func GetClientsHandler(w http.ResponseWriter, r *http.Request) {
 	var clients []models.Client
 	for rows.Next() {
 		var client models.Client
-		err := rows.Scan(&client.ID, &client.Name, &client.Contact) // Используем contact вместо email
+		err := rows.Scan(&client.ID, &client.Name, &client.Contact) 
 		if err != nil {
 			http.Error(w, "Error scanning client data", http.StatusInternalServerError)
 			return
@@ -95,13 +86,11 @@ func GetClientsHandler(w http.ResponseWriter, r *http.Request) {
 		clients = append(clients, client)
 	}
 
-	// Проверяем наличие клиентов
 	if len(clients) == 0 {
 		http.Error(w, "No clients found", http.StatusNotFound)
 		return
 	}
 
-	// Отправляем список клиентов в JSON
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(clients)
 	if err != nil {

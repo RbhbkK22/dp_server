@@ -33,7 +33,7 @@ type Product struct {
 type Client struct {
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
-	Contact string `json:"contact"` // Заменено на поле contact
+	Contact string `json:"contact"` 
 }
 
 type Order struct {

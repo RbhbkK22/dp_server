@@ -1,26 +1,22 @@
 package handlers
 
 import (
-	"automation/db" // Подключение к базе данных
+	"automation/db" 
 	"encoding/json"
 	"log"
 	"net/http"
 )
 
-// Структура для получения данных из запроса
 type DeleteProductRequest struct {
-	ID int `json:"id"` // ID товара
+	ID int `json:"id"` 
 }
 
-// Удаление товара
 func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
-	// Проверяем метод запроса
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Получаем подключение к базе данных
 	database, err := db.ConnectDB()
 	if err != nil {
 		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
@@ -29,7 +25,6 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer database.Close()
 
-	// Декодируем JSON-запрос
 	var req DeleteProductRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input data", http.StatusBadRequest)
@@ -37,7 +32,6 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Удаляем товар из базы данных
 	query := `DELETE FROM product WHERE id = ?`
 	result, err := database.Exec(query, req.ID)
 	if err != nil {
@@ -46,7 +40,6 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Проверяем, были ли удалены строки
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		http.Error(w, "Failed to retrieve delete result", http.StatusInternalServerError)
@@ -60,7 +53,6 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Успешный ответ
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Product deleted successfully"))
 }
