@@ -15,17 +15,18 @@ func GetWorkersByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := dbConn.Query("SELECT id, fio, login, pass FROM workers WHERE fio LIKE ?", "%"+name+"%")
+	rows, err := dbConn.Query("SELECT w.id, w.login, w.fio, p.name AS post, w.pass FROM workers w LEFT JOIN positions p ON w.post = p.id WHERE w.fio LIKE ?",
+	 "%"+name+"%")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
-	var workers []models.Worker
+	var workers []models.User
 	for rows.Next() {
-		var worker models.Worker
-		if err := rows.Scan(&worker.Name, &worker.Position, &worker.Login, &worker.Password); err != nil {
+		var worker models.User
+		if err := rows.Scan(&worker.Id, &worker.Login, &worker.Fio, &worker.Post, &worker.Pass); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
