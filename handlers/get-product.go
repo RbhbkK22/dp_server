@@ -48,47 +48,53 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetProductImageHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "Product ID is required", http.StatusBadRequest)
-		return
-	}
+    id := r.URL.Query().Get("id")
+    if id == "" {
+        http.Error(w, "Product ID is required", http.StatusBadRequest)
+        return
+    }
 
-	dbConn, err := db.ConnectDB()
-	if err != nil {
-		log.Println("Error connecting to database:", err)
-		http.Error(w, "Database connection error", http.StatusInternalServerError)
-		return
-	}
-	defer dbConn.Close()
+    // Подключение к базе данных
+    dbConn, err := db.ConnectDB()
+    if err != nil {
+        log.Println("Error connecting to database:", err)
+        http.Error(w, "Database connection error", http.StatusInternalServerError)
+        return
+    }
+    defer dbConn.Close()
 
-	var photoPath string
-	err = dbConn.QueryRow("SELECT photo FROM product WHERE id = ?", id).Scan(&photoPath)
-	if err != nil {
-		http.Error(w, "Product not found", http.StatusNotFound)
-	
-		return
-	}
-	baseDir := "E:\\back\\testv4hsserv\\automation\\uploads"
+    // Получение пути к фото из базы данных
+    var photoPath string
+    err = dbConn.QueryRow("SELECT photo FROM product WHERE id = ?", id).Scan(&photoPath)
+    if err != nil {
+        log.Println("Error fetching product from database:", err)
+        http.Error(w, "Product not found", http.StatusNotFound)
+        return
+    }
 
-	imagePath := filepath.Join(baseDir, photoPath)
-	log.Println("Trying to read image from path:", imagePath)
+    // Основная директория для поиска изображений
+    baseDir := "E:\\gpp\\testv4hsserv\\automation\\uploads"
+    imagePath := filepath.Join(baseDir, photoPath)
 
-	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
-		log.Println("Image file does not exist at path:", imagePath)
-		http.Error(w, "Image not found", http.StatusNotFound)
+    // Проверка существования файла по пути
+    if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+        log.Println("Image file does not exist at path:", imagePath)
+        http.Error(w, "Image not found", http.StatusNotFound)
+        return
+    }
 
-		return
-	}
+    // Открытие изображения
+    file, err := os.Open(imagePath)
+    if err != nil {
+        log.Println("Error opening image file:", err)
+        http.Error(w, "Error opening image", http.StatusInternalServerError)
+        return
+    }
+    defer file.Close()
 
-	file, err := os.Open(imagePath)
-	if err != nil {
-		log.Println("Error opening image file:", err)
-		http.Error(w, "Error opening image", http.StatusInternalServerError)
-		return
-	}
-	defer file.Close()
-
-	w.Header().Set("Content-Type", "image/jpeg")
-	http.ServeFile(w, r, imagePath)
+    // Отправка изображения в ответ
+    w.Header().Set("Content-Type", "image/jpeg")
+    http.ServeFile(w, r, imagePath)
 }
+
+
