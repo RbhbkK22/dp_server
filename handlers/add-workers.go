@@ -22,22 +22,27 @@ func AddWorkerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var worker models.Worker
+	var worker models.AddWorker
 	if err := json.NewDecoder(r.Body).Decode(&worker); err != nil {
 		http.Error(w, "Invalid input data", http.StatusBadRequest)
 		return
 	}
-	hashedPassword := string(worker.Password)
+	hashedPassword, err := db.HashPassword(worker.Password)
+	if err != nil{
+		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		log.Println("Password hash error:", err)
+		return
+	}
 	query := `INSERT INTO workers (fio, post, login, pass)
-VALUES (?, (SELECT id FROM positions WHERE name = ?), ?, ?)
+VALUES (?, ?, ?, ?)
 `
-	_, err = database.Exec(query, worker.Name, worker.Position, worker.Login, hashedPassword)
+	_, err = database.Exec(query, worker.Name, worker.IdPosition, worker.Login, hashedPassword)
 	if err != nil {
 		http.Error(w, "Failed to add worker to database", http.StatusInternalServerError)
 		log.Println("Error adding worker:", err)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Worker added successfully"))
 }

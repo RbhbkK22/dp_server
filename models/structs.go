@@ -33,7 +33,7 @@ type Product struct {
 type Client struct {
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
-	Contact string `json:"contact"` 
+	Contact string `json:"contact"`
 }
 
 type Order struct {
@@ -49,6 +49,13 @@ type Order struct {
 type Worker struct {
 	Name     string `json:"fio"`
 	Position string `json:"post"`
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
+type AddWorker struct {
+	Name     string `json:"fio"`
+	IdPosition int    `json:"idposit"`
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }
