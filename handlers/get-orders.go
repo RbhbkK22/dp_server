@@ -45,3 +45,47 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func GetItemsInOrder(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "id parameter dont faund", http.StatusBadRequest)
+	}
+	dbConn, err := db.ConnectDB()
+	if err != nil {
+		log.Println("Database connection error:", err)
+		http.Error(w, "Database connection error", http.StatusInternalServerError)
+		return
+	}
+	defer dbConn.Close()
+
+	rows, err := dbConn.Query(`SELECT items.idItems, product.name, product.photo, items.quality
+		FROM items
+		LEFT JOIN product ON product.id = items.idItems
+		WHERE items.idOrders = ?;`, id)
+	if err != nil {
+		log.Println("Database query error:", err)
+		http.Error(w, "Database query error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var result []models.ItemInfo
+
+	for rows.Next() {
+		var item models.ItemInfo
+		err := rows.Scan(&item.ItemId, &item.Name, &item.Photo, &item.Quality)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result = append(result, item)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(result)
+	if err != nil {
+		log.Println("Encode error:", err)
+		http.Error(w, "Encode error", http.StatusInternalServerError)
+	}
+}
+
+// http://localhost:8080/get-items-in-order?id=1

@@ -59,3 +59,25 @@ type AddWorker struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }
+
+type ItemInfo struct {
+	ItemId int
+	Name    string
+	Photo   string
+	Quality int
+}
+
+type Brand struct {
+	Id int `json:"id"`
+	Name string `json:"name"`
+}
+
+type Category struct{
+	Id int `json:"id"`
+	Name string `json:"name"`
+}
+
+type Position struct{
+	Id int `json:"id"`
+	Name string `json:"name"`
+}

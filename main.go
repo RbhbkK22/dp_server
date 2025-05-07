@@ -47,6 +47,10 @@ func main() {
 	http.HandleFunc("/get-order-by-name/order", handlers.GetOrdersByClientName)
 	http.HandleFunc("/get-client-by-name/client", handlers.GetClientsByName)
 	http.HandleFunc("/get-worker-by-name/worker", handlers.GetWorkersByName)
+	http.HandleFunc("/get-items-in-order", handlers.GetItemsInOrder)
+	http.HandleFunc("/get-brand-by-name/brand", handlers.GetBrand)
+	http.HandleFunc("/get-category-by-name/category", handlers.GetCategory)
+	http.HandleFunc("/get-position-by-name/position", handlers.GetPosition)
 	log.Printf("сервер на 8080 порту 🚀")
 	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)))
 }
