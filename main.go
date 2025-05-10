@@ -2,7 +2,6 @@ package main
 
 import (
 	"automation/handlers"
-
 	"log"
 	"net/http"
 )
@@ -10,9 +9,7 @@ import (
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		if r.Method == http.MethodOptions {
@@ -24,13 +21,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Сервер работает ✅"))
-}
-
 func main() {
-	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/change-product", handlers.ChangeProductHandler)
 	http.HandleFunc("/delete-product", handlers.DeleteProductHandler)
 	http.HandleFunc("/add-worker", handlers.AddWorkerHandler)
@@ -51,7 +42,7 @@ func main() {
 	http.HandleFunc("/get-brand-by-name/brand", handlers.GetBrand)
 	http.HandleFunc("/get-category-by-name/category", handlers.GetCategory)
 	http.HandleFunc("/get-position-by-name/position", handlers.GetPosition)
-	http.HandleFunc("/get-product-name-by-id/product", handlers.GetProductNameById)
-	log.Printf("сервер на 8080 порту 🚀")
+	http.HandleFunc("/create-order", handlers.CreateOrderHandler)
+	
 	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)))
 }
