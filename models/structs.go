@@ -81,3 +81,9 @@ type Position struct{
 	Id int `json:"id"`
 	Name string `json:"name"`
 }
+
+type CreateOrderRequest struct {
+        ClientID int            `json:"clientId"`
+        Comment  string         `json:"comment"`
+        Items    map[string]int `json:"items"` 
+    }

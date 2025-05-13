@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"automation/db"
+    "automation/models"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,6 +18,8 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    var request models.CreateOrderRequest
+
     db, err := db.ConnectDB()
     if err != nil {
         http.Error(w, `{"error":"Database connection failed"}`, http.StatusInternalServerError)
@@ -31,11 +34,7 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    var request struct {
-        ClientID int            `json:"clientId"`
-        Comment  string         `json:"comment"`
-        Items    map[string]int `json:"items"` 
-    }
+
 
     if err := json.Unmarshal(body, &request); err != nil {
         http.Error(w, `{"error":"Invalid JSON format"}`, http.StatusBadRequest)
