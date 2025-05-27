@@ -43,6 +43,8 @@ func main() {
 	http.HandleFunc("/get-category-by-name/category", handlers.GetCategory)
 	http.HandleFunc("/get-position-by-name/position", handlers.GetPosition)
 	http.HandleFunc("/create-order", handlers.CreateOrderHandler)
-	
+	http.HandleFunc("/get-product-name-by-id/product", handlers.GetProductNameById)
+	http.HandleFunc("/update-product", handlers.UpdateProductHandler)
+	log.Printf("сервер на 8080 порту 🚀")
 	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)))
 }

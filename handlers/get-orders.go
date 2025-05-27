@@ -17,7 +17,7 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dbConn.Close()
 
-	rows, err := dbConn.Query("SELECT orders.id, clients.name AS client_name, orders.comment, orders.datatime, manager.fio AS manager_name, collector.fio AS collector_name, orders.status FROM orders JOIN clients ON orders.idClients = clients.id JOIN workers AS manager ON orders.idManager = manager.id LEFT JOIN workers AS collector ON orders.idCollector = collector.id;")
+	rows, err := dbConn.Query("SELECT orders.id, clients.name AS client_name, orders.comment, orders.datatime, manager.fio AS manager_name, collector.fio AS collector_name, orders.status FROM orders JOIN clients ON orders.idClients = clients.id JOIN workers AS manager ON orders.idManager = manager.id LEFT JOIN workers AS collector ON orders.idCollector = collector.id ORDER BY orders.datatime DESC;")
 	if err != nil {
 		log.Println("Database query error:", err)
 		http.Error(w, "Database query error", http.StatusInternalServerError)

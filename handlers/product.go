@@ -1,13 +1,15 @@
 package handlers
 
 import (
+	"automation/db"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
-	"automation/db"
 )
 
 func AddProductHandler(res http.ResponseWriter, req *http.Request) {
@@ -174,3 +176,158 @@ func AddProductHandler(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte("Product added successfully"))
 }
+
+func UpdateProductHandler(res http.ResponseWriter, req *http.Request) {
+	var (
+		status int
+		err    error
+	)
+
+	if req.Method != http.MethodPost {
+		http.Error(res, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			http.Error(res, err.Error(), status)
+		}
+	}()
+
+	if err = req.ParseMultipartForm(32 << 20); err != nil {
+		status = http.StatusInternalServerError
+		return
+	}
+
+	// Извлекаем ID товара
+	idStr := req.FormValue("id")
+	if idStr == "" {
+		err = fmt.Errorf("Product ID is required")
+		status = http.StatusBadRequest
+		return
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		err = fmt.Errorf("Invalid product ID")
+		status = http.StatusBadRequest
+		return
+	}
+
+	// Подключение к БД
+	dbConn, err := db.ConnectDB()
+	if err != nil {
+		err = fmt.Errorf("Database connection error: %v", err)
+		status = http.StatusInternalServerError
+		return
+	}
+	defer dbConn.Close()
+
+	// Получаем текущие данные товара
+	var oldPhoto string
+	err = dbConn.QueryRow("SELECT photo FROM product WHERE id = ?", id).Scan(&oldPhoto)
+	if err != nil {
+		err = fmt.Errorf("Product not found")
+		status = http.StatusNotFound
+		return
+	}
+
+	// Собираем обновления
+	updates := make([]string, 0)
+	args := make([]interface{}, 0)
+
+	// Проверка и добавление каждого поля
+	checkAndUpdate := func(fieldName, dbField string) {
+		val := req.FormValue(fieldName)
+		if val != "" {
+			updates = append(updates, fmt.Sprintf("%s = ?", dbField))
+			args = append(args, val)
+		}
+	}
+	checkAndUpdate("name", "name")
+	checkAndUpdate("discript", "discript")
+
+	if val := req.FormValue("idCategories"); val != "" {
+		updates = append(updates, "idCategories = ?")
+		args = append(args, val)
+	}
+	if val := req.FormValue("idBrands"); val != "" {
+		updates = append(updates, "idBrands = ?")
+		args = append(args, val)
+	}
+	if val := req.FormValue("quality"); val != "" {
+		updates = append(updates, "quality = ?")
+		args = append(args, val)
+	}
+	if val := req.FormValue("price"); val != "" {
+		updates = append(updates, "price = ?")
+		args = append(args, val)
+	}
+
+	// Обработка новой картинки
+	file, fileHeader, fileErr := req.FormFile("photo")
+	if fileErr == nil {
+		defer file.Close()
+
+		// Создание уникального имени файла
+		name := req.FormValue("name")
+		idCategoriesStr := req.FormValue("idCategories")
+		idBrandsStr := req.FormValue("idBrands")
+		now := time.Now()
+		date := now.Format("20060102")
+		timeFormatted := now.Format("150405")
+		ext := filepath.Ext(fileHeader.Filename)
+		newFileName := fmt.Sprintf("/%s_%s_%s_%s_%s%s", name, date, timeFormatted, idCategoriesStr, idBrandsStr, ext)
+
+		uploadDir := "./uploads/"
+		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+			err := os.Mkdir(uploadDir, os.ModePerm)
+			if err != nil {
+				status = http.StatusInternalServerError
+				return
+			}
+		}
+		newFilePath := uploadDir + newFileName
+
+		outfile, err := os.Create(newFilePath)
+		if err != nil {
+			status = http.StatusInternalServerError
+			return
+		}
+		defer outfile.Close()
+		_, err = io.Copy(outfile, file)
+		if err != nil {
+			status = http.StatusInternalServerError
+			return
+		}
+
+		// Добавляем фото к обновлению
+		updates = append(updates, "photo = ?")
+		args = append(args, newFileName)
+
+		// Удаляем старую картинку
+		oldPath := "./uploads" + oldPhoto
+		if err := os.Remove(oldPath); err != nil {
+			fmt.Printf("Warning: could not delete old photo: %v\n", err)
+		}
+	}
+
+	if len(updates) == 0 {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("No data to update"))
+		return
+	}
+
+	args = append(args, id)
+	query := fmt.Sprintf("UPDATE product SET %s WHERE id = ?", strings.Join(updates, ", "))
+	_, err = dbConn.Exec(query, args...)
+	if err != nil {
+		err = fmt.Errorf("Database update error: %v", err)
+		status = http.StatusInternalServerError
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
+	res.Write([]byte("Product updated successfully"))
+}
+ //http://localhost:8080/update-product
+//  {id:} обязательное поле
