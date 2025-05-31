@@ -36,6 +36,11 @@ type Client struct {
 	Contact string `json:"contact"`
 }
 
+type AddClientModel struct{
+	Name    string `json:"name"`
+	Contact string `json:"contact"`
+}
+
 type Order struct {
 	Id            int     `json:"id"`
 	ClientName    string  `json:"client_name"`
@@ -86,4 +91,4 @@ type CreateOrderRequest struct {
         ClientID int            `json:"clientId"`
         Comment  string         `json:"comment"`
         Items    map[string]int `json:"items"` 
-    }
+}

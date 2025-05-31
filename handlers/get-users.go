@@ -98,3 +98,36 @@ func GetClientsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func AddClient(w http.ResponseWriter, r *http.Request) {
+	database, err := db.ConnectDB() 
+	if err != nil {
+		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+		log.Println("Database connection error:", err)
+		return
+	}
+	defer database.Close()
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var client models.AddClientModel
+
+	if err := json.NewDecoder(r.Body).Decode(&client); err !=nil{
+		http.Error(w, "Invalid input data", http.StatusBadRequest)
+		return
+	}
+
+	query := `INSERT INTO clients (name, contact) VALUES (?, ?)`
+	_, err = database.Exec(query, client.Name, client.Contact)
+	if err != nil {
+		http.Error(w, "Failed to add worker to database", http.StatusInternalServerError)
+		log.Println("Error adding worker:", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Worker added successfully"))
+}
