@@ -46,6 +46,11 @@ func main() {
 	http.HandleFunc("/get-product-name-by-id/product", handlers.GetProductNameById)
 	http.HandleFunc("/update-product", handlers.UpdateProductHandler)
 	http.HandleFunc("/add-clients", handlers.AddClient)
+	http.HandleFunc("/get-all-brands", handlers.GetBrands)
+	http.HandleFunc("/get-all-categ", handlers.GetCategoryes)
+
+	http.HandleFunc("/export", handlers.ExporpHandler)
 	log.Printf("сервер на 8080 порту 🚀")
 	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)))
 }
+ч
