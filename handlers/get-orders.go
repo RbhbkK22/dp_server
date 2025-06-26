@@ -88,4 +88,55 @@ func GetItemsInOrder(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
+func ChangeOrderStatusHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Подключение к базе
+	database, err := db.ConnectDB()
+	if err != nil {
+		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+		log.Println("DB connection error:", err)
+		return
+	}
+	defer database.Close()
+
+	// Парсим форму (x-www-form-urlencoded или multipart/form-data)
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		log.Println("Parse form error:", err)
+		return
+	}
+
+	// Получаем параметры
+	id := r.FormValue("id")
+	newStatus := r.FormValue("status")
+
+	if id == "" || newStatus == "" {
+		http.Error(w, "Missing order id or status", http.StatusBadRequest)
+		log.Println("Missing id or status")
+		return
+	}
+
+	// Обновляем статус в базе
+	query := `
+		UPDATE orders
+		SET status = ?
+		WHERE id = ?`
+
+	_, err = database.Exec(query, newStatus, id)
+	if err != nil {
+		http.Error(w, "Failed to update order status", http.StatusInternalServerError)
+		log.Println("Update error:", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Order status updated successfully"))
+}
+
 // http://localhost:8080/get-items-in-order?id=1

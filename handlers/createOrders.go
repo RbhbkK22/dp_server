@@ -61,7 +61,7 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
     defer tx.Rollback()
 
     res, err := tx.Exec(
-        "INSERT INTO orders (idClients, comment, datatime, idManager, status) VALUES (?, ?, ?, 1, 'new')",
+        "INSERT INTO orders (idClients, comment, datatime, idManager, status) VALUES (?, ?, ?, 1, 'Новый')",
         request.ClientID, request.Comment, time.Now())
     if err != nil {
         http.Error(w, `{"error":"Failed to create order"}`, http.StatusInternalServerError)

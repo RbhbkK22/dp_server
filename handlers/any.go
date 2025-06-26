@@ -144,3 +144,73 @@ func GetCategoryes(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(categories)
 }
+
+func AddBrand(w http.ResponseWriter, r *http.Request) {
+	database, err := db.ConnectDB()
+	if err != nil {
+		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+		log.Println("Database connection error:", err)
+		return
+	}
+	defer database.Close()
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var input struct {
+		Name string `json:"name"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil || input.Name == "" {
+		http.Error(w, "Invalid input data", http.StatusBadRequest)
+		return
+	}
+
+	query := `INSERT INTO brands (name) VALUES (?)`
+	_, err = database.Exec(query, input.Name)
+	if err != nil {
+		http.Error(w, "Failed to add brand to database", http.StatusInternalServerError)
+		log.Println("Error adding brand:", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Brand added successfully"))
+}
+
+func AddCategory(w http.ResponseWriter, r *http.Request) {
+	database, err := db.ConnectDB()
+	if err != nil {
+		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+		log.Println("Database connection error:", err)
+		return
+	}
+	defer database.Close()
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var input struct {
+		Name string `json:"name"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil || input.Name == "" {
+		http.Error(w, "Invalid input data", http.StatusBadRequest)
+		return
+	}
+
+	query := `INSERT INTO categories (name) VALUES (?)`
+	_, err = database.Exec(query, input.Name)
+	if err != nil {
+		http.Error(w, "Failed to add category to database", http.StatusInternalServerError)
+		log.Println("Error adding category:", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Category added successfully"))
+}
